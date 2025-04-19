@@ -1,0 +1,33 @@
+.loginFormCont {
+
+    /* color: white; */
+    display: flex;
+    width: 100%;
+
+    height: 450px;
+    position: relative;
+    top: 50px;
+    justify-content: center;
+    align-items: center;
+}
+
+
+h2 {
+    /* color: blue !important; */
+    margin: auto;
+    display: inline;
+}
+
+.loginForm {
+    height: fit-content;
+    width: 300px;
+    border: 5px solid #66451c;
+    border-radius: 15px;
+    padding: 20px;
+
+}
+
+button.submit {
+    background-color: #66451c;
+    border: none;
+}
