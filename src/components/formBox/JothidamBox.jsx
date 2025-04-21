@@ -34,13 +34,13 @@ const initializeBox = () => {
 
 const JothidamBox = ({ setFormData, formData }) => {
   const handleChange = (boxKey, index, selected) => {
-    setFormData((prev) => ({
-      ...prev,
-      [boxKey]: {
-        ...prev[boxKey],
-        [index]: selected,
-      },
-    }));
+    setFormData((prev) => {
+      const updatedBox = { ...prev[boxKey], [index]: selected };
+      return {
+        ...prev,
+        [boxKey]: updatedBox,
+      };
+    });
   };
 
   return (
@@ -106,14 +106,6 @@ const JothidamBox = ({ setFormData, formData }) => {
           </Row>
         </div>
       ))}
-
-      {/* Optional: Display formData for debugging */}
-      {/* 
-      <div className="mt-4">
-        <Title level={5}>Form Data:</Title>
-        <pre>{JSON.stringify(formData, null, 2)}</pre>
-      </div> 
-      */}
     </div>
   );
 };

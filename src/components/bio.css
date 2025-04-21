@@ -1,0 +1,381 @@
+/* Basic Box Sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Main Container - Responsive */
+.biodata-showcase {
+  /* Remove fixed width */
+  max-width: 800px; /* Max width on large screens */
+  width: 95%; /* Fluid width on smaller screens */
+  margin: 20px auto; /* Center the div and add some margin */
+  padding: 20px; /* Padding inside the border */
+  border: 10px solid orange;
+  position: relative; /* Needed for watermark positioning */
+  font-family: sans-serif; /* Or choose a preferred font */
+  color: #333; /* Default text color */
+  line-height: 1.6;
+  background-color: #fff; /* Ensure background is white for PDF */
+}
+
+/* Background Watermark */
+.biodata-watermark {
+  position: absolute;
+  top: 50%; /* Center vertically */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Adjust for element's own size */
+  width: 60%; /* Responsive width */
+  height: 60%; /* Responsive height */
+  background-image: url('../images/cnnmLogo.png');
+  background-size: contain; /* Ensure logo fits */
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.07; /* Adjust transparency */
+  z-index: 0; /* Ensure it's behind content */
+  pointer-events: none; /* Prevent it from interfering with clicks */
+}
+
+
+/* Header Layout */
+.showcase-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Allow header items to wrap on smaller screens */
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center content horizontally within the header */
+    width: 100%; /* Take full width */
+    flex-wrap: wrap; /* Allow logo and info to wrap */
+}
+
+.header-logo {
+  width: 80px; /* Slightly smaller logo on smaller screens */
+  height: 80px;
+  margin-right: 20px; /* Space between logo and info */
+  flex-shrink: 0; /* Prevent logo from shrinking */
+}
+
+.header-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center text content */
+    justify-content: center;
+    text-align: center;
+    flex-grow: 1; /* Allow info section to grow */
+    min-width: 200px; /* Ensure info section doesn't get too small */
+}
+
+
+/* Adjust TamilTextEffect style if needed */
+/* You might need to add a class to TamilTextEffect's root element */
+
+
+.registerNo {
+  font-size: 12px;
+  margin-top: 0px; /* Adjust margin */
+  display: block; /* Each address line on its own */
+}
+
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Reduced gap */
+  margin-top: 5px;
+  flex-wrap: wrap; /* Allow contact items to wrap */
+  justify-content: center; /* Center icons and text */
+}
+
+.contact-label {
+    font-size: 11px; /* Smaller font size */
+    font-weight: bold;
+}
+
+.contact-icon {
+  width: 16px; /* Smaller icons */
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.whatsapp-icon {
+    margin-left: 10px; /* Adjust margin */
+}
+
+.web-icon {
+     margin-left: 10px; /* Adjust margin */
+}
+
+
+.contact-value {
+  font-size: 11px; /* Smaller font size */
+}
+
+.email-value {
+    color: blue;
+}
+
+
+/* Form Titles */
+.form-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: red;
+  margin-top: 10px; /* Adjust margin */
+  margin-bottom: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.main-title {
+    color: red;
+    margin-top: -10px; /* Adjust if needed */
+    margin-bottom: 15px;
+}
+
+.form-section-title {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px; /* Adjust margin */
+    margin-bottom: 10px;
+}
+
+.form-section-title .form-title {
+    color: blue;
+    border: 1px solid red;
+    padding: 2px 10px; /* Adjust padding */
+    width: auto; /* Auto width based on content */
+    max-width: 90%; /* Max width */
+    text-align: center;
+    border-radius: 5px;
+    margin: 0; /* Reset margins */
+}
+
+
+/* Details Grid - Responsive */
+.details-grid {
+  display: grid;
+  /* Default to one column on small screens */
+  grid-template-columns: 1fr;
+  gap: 15px; /* Gap between items */
+  margin-top: 10px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column; /* Stack details vertically */
+  gap: 5px; /* Space between label/value pairs */
+}
+
+.detail-label {
+  font-weight: bold;
+  font-size: 14px; /* Default font size */
+  word-break: break-word; /* Break long words */
+}
+
+.detail-label span {
+    font-weight: normal; /* Value is not bold */
+}
+
+.detail-value {
+    font-size: 14px; /* Default font size */
+     word-break: break-word; /* Break long words */
+}
+
+.address-value {
+    font-size: 12px; /* Smaller font size for address */
+    font-weight: normal;
+}
+
+
+.full-width {
+    grid-column: 1 / -1; /* Span across all columns */
+}
+
+.capitalize span {
+    text-transform: capitalize; /* Apply capitalize to the span content */
+}
+
+/* Grouping for side-by-side details on larger screens */
+.detail-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-inline-group {
+    display: flex;
+    gap: 20px; /* Space between Time and Age */
+    align-items: center;
+}
+
+
+/* Photo Section */
+.photo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Align photo to the right */
+    gap: 5px;
+}
+
+.reg-no {
+    font-size: 12px;
+    font-weight: bold;
+    color: green;
+}
+
+.profile-photo-container {
+    width: 120px; /* Smaller photo on small screens */
+    height: 120px;
+    border: 1px solid pink;
+    overflow: hidden;
+    display: flex; /* Center image inside container */
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Ensure the image fits without distortion */
+}
+
+.dasa-iruppu {
+    font-size: 12px;
+    margin-top: 10px; /* Add some space */
+}
+
+/* Charts Container */
+.chart-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow charts to wrap */
+    gap: 20px; /* Space between charts */
+    justify-content: center; /* Center charts */
+    align-items: flex-start; /* Align charts to the top */
+    margin-top: 20px;
+    grid-column: 1 / -1; /* Span across all columns in the details grid */
+}
+
+/* Media Query for larger screens (e.g., tablets and desktops) */
+@media (min-width: 600px) {
+  .details-grid {
+    /* Two columns on larger screens */
+    grid-template-columns: 1fr 1fr 150px; /* Adjust column widths as needed */
+    gap: 20px 30px; /* Adjust gap between rows and columns */
+  }
+
+  .detail-item {
+    /* detail-item itself doesn't span, its *children* fill the space */
+     grid-column: span 1; /* Default span */
+  }
+
+  /* Specific spanning for the first detail-item and groups */
+  .details-grid > div:nth-child(1) { /* The first .detail-item */
+    grid-column: span 1;
+  }
+
+   .detail-group {
+      grid-column: span 1;
+   }
+
+
+  .photo-section {
+    grid-column: 3 / 4; /* Place photo section in the third column */
+    grid-row: 1 / span 2; /* Span across the first two rows */
+    align-self: start; /* Align to the top of its grid area */
+    align-items: flex-end; /* Align photo to the right within its column */
+  }
+
+   .details-grid > div:nth-child(1).detail-item {
+    /* Target the first details-item specifically */
+    grid-column: 1 / 2; /* Ensure it's in the first column */
+   }
+
+   .details-grid > div:nth-child(2).detail-group {
+     /* Target the first detail-group (second element in grid) */
+     grid-column: 2 / 3; /* Ensure it's in the second column */
+   }
+
+    /* Adjust column span for family details section */
+   .showcase-section:nth-of-type(2) .details-grid > div:nth-child(1).detail-item {
+        grid-column: 1 / 2;
+   }
+    .showcase-section:nth-of-type(2) .details-grid > div:nth-child(2).detail-group {
+        grid-column: 2 / 3;
+   }
+
+     /* Adjust column span for religious details section */
+    .showcase-section:nth-of-type(3) .details-grid > div:nth-child(1).detail-item {
+        grid-column: 1 / 2;
+    }
+     .showcase-section:nth-of-type(3) .details-grid > div:nth-child(2).detail-group {
+        grid-column: 2 / 3;
+    }
+
+
+  .full-width {
+    grid-column: 1 / -1; /* Still span across all columns */
+  }
+
+  .header-logo {
+    width: 100px; /* Larger logo on larger screens */
+    height: 100px;
+  }
+
+    .header-info {
+        align-items: flex-start; /* Align text left in header */
+        text-align: left;
+    }
+
+     .contact-row {
+        justify-content: flex-start; /* Align contact info left */
+     }
+
+     .contact-label {
+        font-size: 12px;
+     }
+
+     .contact-icon {
+        width: 20px;
+        height: 20px;
+     }
+     .contact-value {
+        font-size: 12px;
+     }
+
+     .whatsapp-icon {
+        margin-left: 80px; /* Restore original large gap */
+     }
+     .web-icon {
+         margin-left: 60px; /* Restore original large gap */
+     }
+
+    .form-section-title .form-title {
+        width: 200px; /* Restore original width */
+    }
+
+    .profile-photo-container {
+        width: 140px; /* Restore original photo size */
+        height: 140px;
+    }
+
+    .chart-container {
+        gap: 80px; /* Restore original gap between charts */
+        justify-content: center; /* Still center charts */
+    }
+
+
+}
+ /* styles.css or global.css */
+@media print {
+    .no-print {
+      display: none !important;
+    }
+  }
+  

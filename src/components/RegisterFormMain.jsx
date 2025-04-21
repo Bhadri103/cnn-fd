@@ -24,6 +24,9 @@ const RegisterFormMain = () => {
     father_name: "",
     mother_name: "",
     father_desigination: "",
+    father_qualification: "",
+    mother_qualification: "",
+    dasa_iruppu: "",
     mother_desigination: "",
     father: "",
     mother: "",
@@ -92,29 +95,43 @@ const RegisterFormMain = () => {
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
-      caste: "Vanniya Kula Kshatriya",
+      caste: "VanniyaKula Kshatriya",
     }));
-  }, []); // empty dependency = run only on mount
+  }, []);
 
   const validateField = (fieldName, value) => {
-    if (!value || value.toString().trim() === "")
+    if (!value || value.toString().trim() === "") {
+      // Make "other_property" optional unless own_house is "no"
+      if (fieldName === "other_property" && formData.own_house !== "no") {
+        return "";
+      }
       return "This field is required";
+    }
 
     switch (fieldName) {
       case "email":
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
           ? ""
           : "Invalid email format";
+
       case "mobile_1":
       case "mobile_2":
       case "whatsapp":
         return value.length === 0 || /^\d{10}$/.test(value)
           ? ""
           : "Enter a valid 10-digit mobile number";
+
       case "pin_code":
         return value.length === 0 || /^\d{6}$/.test(value)
           ? ""
           : "Enter a valid 6-digit PIN code";
+
+      case "other_property":
+        if (formData.own_house == "no" && value.trim() === "") {
+          return "Please specify other property details";
+        }
+        return "";
+
       default:
         return "";
     }
@@ -163,32 +180,62 @@ const RegisterFormMain = () => {
   const handleInputChange = (event) => {
     const { name, value } = event.target;
 
-    //handle salary input
+    let newValue = value;
+    let errorMessage = "";
 
+    // Handle salary formatting
     if (name === "salary") {
-      // Remove any non-numeric characters (except for the decimal point)
       const cleanedValue = value.replace(/[^0-9.]/g, "");
-
-      // Format the number using toLocaleString to display in INR format
-      const formattedSalary = Number(cleanedValue).toLocaleString("en-IN");
-
+      newValue = Number(cleanedValue).toLocaleString("en-IN");
+    }
+    if (name === "own_house" && value === "yes") {
       setFormData((prev) => ({
         ...prev,
-        [name]: formattedSalary,
+        [name]: value,
+        other_property: "",
       }));
+      return;
+    }
+    // Handle DOB and age validation
+    if (name === "dob") {
+      const today = new Date();
+      const dob = new Date(value);
+      let age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+
+      // Adjust age if birth month/day hasn't occurred yet this year
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < dob.getDate())
+      ) {
+        age--;
+      }
+
+      if (age < 18) {
+        errorMessage = "Age must be at least 18 years.";
+      }
     }
 
+    // Set form data
     setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-      // Reset has_children and children when marital_status changes
-      if (name === "marital_status" && value === "Unmarried") {
+      const newData = { ...prev, [name]: newValue };
+
+      // Reset dependent fields when marital_status changes
+      if (name === "marital_status" && newValue === "Unmarried") {
         newData.has_children = "";
         newData.children = [];
       }
+
       return newData;
     });
-    setFormErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+
+    // Set error messages
+    setFormErrors((prev) => ({
+      ...prev,
+      [name]: errorMessage || validateField(name, newValue),
+    }));
   };
+
   const handleCasteChange = (e) => {
     const { value } = e.target;
     setFormData({
@@ -1132,6 +1179,58 @@ const RegisterFormMain = () => {
 
     return isValid;
   };
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+
+  //   if (!validateForm()) {
+  //     alert("Please fix the validation errors and try again.");
+  //     return;
+  //   }
+
+  //   setIsSubmitting(true);
+  //   try {
+  //     const formDataToSubmit = new FormData();
+  //     Object.entries(formData).forEach(([key, value]) => {
+  //       if (key === "children") {
+  //         formDataToSubmit.append(key, JSON.stringify(value));
+  //       } else {
+  //         formDataToSubmit.append(key, value);
+  //       }
+  //     });
+
+  //     const response = await axios.post(
+  //       `${BASE_URL}/registeredUsers.php`,
+  //       formDataToSubmit,
+  //       {
+  //         headers: { "Content-Type": "multipart/form-data" },
+  //       }
+  //     );
+
+  //     const responseData = response.data.data;
+  //     if (responseData?.status === "valid") {
+  //       alert("Registration successful!");
+  //       setFormData(initialFormData);
+  //       setFormErrors(initialFormErrors);
+  //       setFileNames({
+  //         profile_photo1: "",
+  //         profile_photo2: "",
+  //         horoscope: "",
+  //       });
+  //       Object.values(fileInputRefs.current).forEach((ref) => {
+  //         if (ref) ref.value = "";
+  //       });
+  //       navigate("/payment");
+  //     } else {
+  //       alert(
+  //         "Registration failed: " + (responseData?.error || "Unknown error")
+  //       );
+  //     }
+  //   } catch (error) {
+  //     alert("An error occurred during registration: " + error.message);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -1144,7 +1243,8 @@ const RegisterFormMain = () => {
     try {
       const formDataToSubmit = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
-        if (key === "children") {
+        if (key === "children" || key === "rasi" || key === "navamsam") {
+          // Convert children, rasi, and navamsam objects/arrays to JSON strings
           formDataToSubmit.append(key, JSON.stringify(value));
         } else {
           formDataToSubmit.append(key, value);
@@ -1161,7 +1261,7 @@ const RegisterFormMain = () => {
 
       const responseData = response.data.data;
       if (responseData?.status === "valid") {
-        alert("Registration successful!");
+        // alert("Registration successful!");
         setFormData(initialFormData);
         setFormErrors(initialFormErrors);
         setFileNames({
@@ -1184,13 +1284,21 @@ const RegisterFormMain = () => {
       setIsSubmitting(false);
     }
   };
-
   // useEffect(() => {
   //   setEnableOtherMotherTongue(false);
   // }, []);
 
   return (
     <div className="container userRegisterationForm">
+      {/* <div className="col-md-12">
+        <div className="form-group">
+          <label>Form Data:</label>
+          <div className="form-data-display">
+            <pre>{JSON.stringify(formData, null, 2)}</pre>
+          </div>
+        </div>
+      </div> */}
+
       <div className="register-title">
         <h3>REGISTRATION FORM</h3>
       </div>
@@ -1462,29 +1570,6 @@ const RegisterFormMain = () => {
           </div>
 
           <div className="col-md-6">
-            {/* <div className="form-group">
-              <label>
-                Mother Tongue<span className="text-danger">*</span>:
-              </label>
-              <select
-                name="mother_tongue"
-                value={formData.mother_tongue}
-                onChange={handleInputChange}
-                className="form-control"
-                disabled={isSubmitting}
-                ref={(el) => (formRefs.current.mother_tongue = el)}
-              >
-                <option value="">Select</option>
-                <option value="Tamil">Tamil</option>
-                <option value="Telugu">Telugu</option>
-                <option value="English">English</option>
-                <option value="Others">Others</option>
-              </select>
-              {formErrors.mother_tongue && (
-                <span className="text-danger">{formErrors.mother_tongue}</span>
-              )}
-            </div> */}
-
             <div className="form-group">
               <label>
                 Mother Tongue<span className="text-danger">*</span>:
@@ -1545,24 +1630,24 @@ const RegisterFormMain = () => {
                 <span className="text-danger">{formErrors.mother_tongue}</span>
               )} */}
             </div>
-            <div className="col-md-12">
-              <div className="form-group">
-                <label>
-                  Lagnam<span className="text-danger">*</span>:
-                </label>
-                <input
-                  type="text"
-                  name="lagnam"
-                  value={formData.lagnam}
-                  onChange={handleInputChange}
-                  className="form-control"
-                  disabled={isSubmitting}
-                  ref={(el) => (formRefs.current.lagnam = el)}
-                />
-                {formErrors.lagnam && (
-                  <span className="text-danger">{formErrors.lagnam}</span>
-                )}
-              </div>
+          </div>
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>
+                Lagnam<span className="text-danger">*</span>:
+              </label>
+              <input
+                type="text"
+                name="lagnam"
+                value={formData.lagnam}
+                onChange={handleInputChange}
+                className="form-control"
+                disabled={isSubmitting}
+                ref={(el) => (formRefs.current.lagnam = el)}
+              />
+              {formErrors.lagnam && (
+                <span className="text-danger">{formErrors.lagnam}</span>
+              )}
             </div>
           </div>
 
@@ -1706,8 +1791,8 @@ const RegisterFormMain = () => {
                 ref={(el) => (formRefs.current.caste = el)}
               >
                 <option value="">Select</option>
-                <option value="Vanniya Kula Kshatriya">
-                  Vanniya Kula Kshatriya
+                <option value="VanniyaKula Kshatriya">
+                  VanniyaKula Kshatriya
                 </option>
                 {/* Add other initial caste options here if needed */}
               </select>
@@ -1717,7 +1802,7 @@ const RegisterFormMain = () => {
             </div>
           </div>
 
-          {formData.caste === "Vanniya Kula Kshatriya" && (
+          {formData.caste === "VanniyaKula Kshatriya" && (
             <div className="col-md-6">
               <div className="form-group">
                 <label>
@@ -1764,38 +1849,38 @@ const RegisterFormMain = () => {
                 disabled={isSubmitting}
                 ref={(el) => (formRefs.current.height = el)}
               >
-                <option value="1">-Select-</option>
-                <option value="2">4ft - 121 cm</option>
-                <option value="3">4ft 1in - 124cm</option>
-                <option value="4">4ft 2in - 127cm</option>
-                <option value="5">4ft 3in - 129cm</option>
-                <option value="6">4ft 4in - 132cm</option>
-                <option value="7">4ft 5in - 134cm</option>
-                <option value="8">4ft 6in - 137cm</option>
-                <option value="9">4ft 7in - 139cm</option>
-                <option value="10">4ft 8in - 142cm</option>
-                <option value="11">4ft 9in - 144cm</option>
-                <option value="12">4ft 10in - 147cm</option>
-                <option value="13">4ft 11in - 149cm</option>
-                <option value="14">5ft - 152cm</option>
-                <option value="15">5ft 1in - 154cm</option>
-                <option value="16">5ft 2in - 157cm</option>
-                <option value="17">5ft 3in - 160cm</option>
-                <option value="18">5ft 4in - 162cm</option>
-                <option value="19">5ft 5in - 165cm</option>
-                <option value="20">5ft 6in - 167cm</option>
-                <option value="21">5ft 7in - 170cm</option>
-                <option value="22">5ft 8in - 172cm</option>
-                <option value="23">5ft 9in - 175cm</option>
-                <option value="24">5ft 10in - 177cm</option>
-                <option value="25">5ft 11in - 180cm</option>
-                <option value="26">6ft - 182cm</option>
-                <option value="27">6ft 1in - 185cm</option>
-                <option value="28">6ft 2in - 187cm</option>
-                <option value="29">6ft 3in - 190cm</option>
-                <option value="30">6ft 4in - 193cm</option>
-                <option value="31">6ft 5in - 195cm</option>
-                <option value="32">6ft 6in - 198cm</option>
+                <option value="">- Select -</option>
+                <option value="121 cm">4ft - 121 cm</option>
+                <option value="124 cm">4ft 1in - 124 cm</option>
+                <option value="127 cm">4ft 2in - 127 cm</option>
+                <option value="129 cm">4ft 3in - 129 cm</option>
+                <option value="132 cm">4ft 4in - 132 cm</option>
+                <option value="134 cm">4ft 5in - 134 cm</option>
+                <option value="137 cm">4ft 6in - 137 cm</option>
+                <option value="139 cm">4ft 7in - 139 cm</option>
+                <option value="142 cm">4ft 8in - 142 cm</option>
+                <option value="144 cm">4ft 9in - 144 cm</option>
+                <option value="147 cm">4ft 10in - 147 cm</option>
+                <option value="149 cm">4ft 11in - 149 cm</option>
+                <option value="152 cm">5ft - 152 cm</option>
+                <option value="154 cm">5ft 1in - 154 cm</option>
+                <option value="157 cm">5ft 2in - 157 cm</option>
+                <option value="160 cm">5ft 3in - 160 cm</option>
+                <option value="162 cm">5ft 4in - 162 cm</option>
+                <option value="165 cm">5ft 5in - 165 cm</option>
+                <option value="167 cm">5ft 6in - 167 cm</option>
+                <option value="170 cm">5ft 7in - 170 cm</option>
+                <option value="172 cm">5ft 8in - 172 cm</option>
+                <option value="175 cm">5ft 9in - 175 cm</option>
+                <option value="177 cm">5ft 10in - 177 cm</option>
+                <option value="180 cm">5ft 11in - 180 cm</option>
+                <option value="182 cm">6ft - 182 cm</option>
+                <option value="185 cm">6ft 1in - 185 cm</option>
+                <option value="187 cm">6ft 2in - 187 cm</option>
+                <option value="190 cm">6ft 3in - 190 cm</option>
+                <option value="193 cm">6ft 4in - 193 cm</option>
+                <option value="195 cm">6ft 5in - 195 cm</option>
+                <option value="198 cm">6ft 6in - 198 cm</option>
               </select>
 
               {formErrors.height && (
@@ -1805,20 +1890,25 @@ const RegisterFormMain = () => {
           </div>
 
           {/* // complexion */}
-          <div className="col-md-12">
+          <div className="col-md-6">
             <div className="form-group">
               <label>
                 Complexion<span className="text-danger">*</span>:
               </label>
-              <input
-                type="text"
+              <select
                 name="complexion"
                 value={formData.complexion}
                 onChange={handleInputChange}
                 className="form-control"
                 disabled={isSubmitting}
                 ref={(el) => (formRefs.current.complexion = el)}
-              />
+              >
+                <option value="">-- Select Complexion --</option>
+                <option value="Fair">Fair</option>
+                <option value="Wheatish">Wheatish</option>
+                <option value="Dark">Dark</option>
+                <option value="Maaniram">Maaniram</option>
+              </select>
               {formErrors.complexion && (
                 <span className="text-danger">{formErrors.complexion}</span>
               )}
@@ -1905,7 +1995,52 @@ const RegisterFormMain = () => {
               )}
             </div>
           </div>
-
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>
+                Father’s Education Qualification
+                <span className="text-danger">*</span>:
+              </label>
+              <input
+                type="text"
+                name="father_qualification"
+                value={formData.father_qualification || ""}
+                onChange={handleInputChange}
+                className="form-control"
+                placeholder="Enter Father's Qualification"
+                disabled={isSubmitting}
+                ref={(el) => (formRefs.current.father_qualification = el)}
+              />
+              {formErrors.father_qualification && (
+                <span className="text-danger">
+                  {formErrors.father_qualification}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>
+                Mother’s Education Qualification
+                <span className="text-danger">*</span>:
+              </label>
+              <input
+                type="text"
+                name="mother_qualification"
+                value={formData.mother_qualification || ""}
+                onChange={handleInputChange}
+                className="form-control"
+                placeholder="Enter Mother's Qualification"
+                disabled={isSubmitting}
+                ref={(el) => (formRefs.current.mother_qualification = el)}
+              />
+              {formErrors.mother_qualification && (
+                <span className="text-danger">
+                  {formErrors.mother_qualification}
+                </span>
+              )}
+            </div>
+          </div>
           <div className="col-md-6">
             <div className="form-group">
               <label>
@@ -2062,7 +2197,7 @@ const RegisterFormMain = () => {
             </div>
           </div>
 
-          <div className="col-md-12">
+          <div className="col-md-6">
             <div className="form-group">
               <label>
                 Birth Order<span className="text-danger">*</span>:
@@ -2094,7 +2229,7 @@ const RegisterFormMain = () => {
           </div>
 
           <h5>Education & Job Details</h5>
-          <div className="col-md-12">
+          <div className="col-md-6">
             <div className="form-group">
               <label>
                 Qualification<span className="text-danger">*</span>:
@@ -2118,7 +2253,7 @@ const RegisterFormMain = () => {
 
           {/* // own house  */}
 
-          <div className="col-md-4">
+          <div className="col-md-6">
             <div className="form-group">
               <label>
                 Own House<span className="text-danger">*</span>:
@@ -2141,31 +2276,30 @@ const RegisterFormMain = () => {
             </div>
           </div>
 
-          <div className="col-md-6">
-            {/* <div className="form-group">
-              <label>
-                Job Type<span className="text-danger">*</span>:
-              </label>
+          {/* Show this only when own_house is "no" */}
+          {formData.own_house === "no" && (
+            <div className="col-md-6">
+              <div className="form-group">
+                <label>Any other property (land, shop, etc.)?</label>
+                <input
+                  type="text"
+                  name="other_property"
+                  value={formData.other_property || ""}
+                  onChange={handleInputChange}
+                  className="form-control"
+                  disabled={isSubmitting}
+                  ref={(el) => (formRefs.current.other_property = el)}
+                />
+                {formErrors.other_property && (
+                  <span className="text-danger">
+                    {formErrors.other_property}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
-              <select
-                name="job_type"
-                value={formData.job_type}
-                onChange={handleInputChange}
-                className="form-control"
-                disabled={isSubmitting}
-                ref={(el) => (formRefs.current.job_type = el)}
-              >
-                <option value="">Select</option>
-                <option value="Software Engineer">Software Engineer</option>
-                <option value="Doctor">Doctor</option>
-                <option value="Business">Business</option>
-                <option value="Government Employee">Government Employee</option>
-                <option value="Unemployed">Unemployed</option>
-              </select>
-              {formErrors.job_type && (
-                <span className="text-danger">{formErrors.job_type}</span>
-              )}
-            </div> */}
+          <div className="col-md-6">
             <div className="form-group">
               <label>
                 Job Type<span className="text-danger">*</span>:
@@ -2197,7 +2331,7 @@ const RegisterFormMain = () => {
           <div className="col-md-6">
             <div className="form-group">
               <label>
-                ORGANIZATION NAME / DEPARTMENT
+                Organization Name / Department
                 <span className="text-danger">*</span>:
               </label>
               <input
@@ -2259,7 +2393,7 @@ const RegisterFormMain = () => {
           </div>
 
           <h5>Dosham</h5>
-          <div className="col-md-4">
+          <div className="col-md-6">
             <div className="form-group">
               <label>
                 Sevaai Dosham<span className="text-danger">*</span>:
@@ -2282,30 +2416,7 @@ const RegisterFormMain = () => {
             </div>
           </div>
 
-          {/* <div className="col-md-4">
-    <div className="form-group">
-        <label>
-            Sarpa Dosham<span className="text-danger">*</span>:
-        </label>
-        <select
-            name="sarpam_dhosam"
-            value={formData.sarpam_dhosam}
-            onChange={handleInputChange}
-            className="form-control"
-            disabled={isSubmitting}
-            ref={(el) => (formRefs.current.sarpam_dhosam = el)}
-        >
-            <option value="">Select</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-        </select>
-        {formErrors.sarpam_dhosam && (
-            <span className="text-danger">{formErrors.sarpam_dhosam}</span>
-        )}
-    </div>
-</div> */}
-
-          <div className="col-md-4">
+          <div className="col-md-6">
             <div className="form-group">
               <label>
                 Raagu-ketu Dosham<span className="text-danger">*</span>:
@@ -2327,7 +2438,26 @@ const RegisterFormMain = () => {
               )}
             </div>
           </div>
-
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>
+                Dasa Iruppu<span className="text-danger">*</span>:
+              </label>
+              <input
+                type="text"
+                name="dasa_iruppu"
+                value={formData.dasa_iruppu || ""}
+                onChange={handleInputChange}
+                className="form-control"
+                placeholder="Enter Dasa Iruppu"
+                disabled={isSubmitting}
+                ref={(el) => (formRefs.current.dasa_iruppu = el)}
+              />
+              {formErrors.dasa_iruppu && (
+                <span className="text-danger">{formErrors.dasa_iruppu}</span>
+              )}
+            </div>
+          </div>
           <h5>Contact Details</h5>
           <div className="col-md-6">
             <div className="form-group">
@@ -2550,6 +2680,83 @@ const RegisterFormMain = () => {
               />
               {formErrors.expectations && (
                 <span className="text-danger">{formErrors.expectations}</span>
+              )}
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>
+                Contact Person Name<span className="text-danger">*</span>:
+              </label>
+              <input
+                type="text"
+                name="contact_person_name"
+                value={formData.contact_person_name || ""}
+                onChange={handleInputChange}
+                className="form-control"
+                placeholder="Enter name"
+                disabled={isSubmitting}
+                ref={(el) => (formRefs.current.contact_person_name = el)}
+              />
+              {formErrors.contact_person_name && (
+                <span className="text-danger">
+                  {formErrors.contact_person_name}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>
+                Contact Person Mobile<span className="text-danger">*</span>:
+              </label>
+              <input
+                type="tel"
+                name="contact_person_mobile"
+                value={formData.contact_person_mobile || ""}
+                onChange={handleInputChange}
+                className="form-control"
+                placeholder="Enter 10-digit Mobile Number"
+                maxLength="10"
+                disabled={isSubmitting}
+                ref={(el) => (formRefs.current.contact_person_mobile = el)}
+              />
+              {formErrors.contact_person_mobile && (
+                <span className="text-danger">
+                  {formErrors.contact_person_mobile}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>
+                Relation<span className="text-danger">*</span>:
+              </label>
+              <select
+                name="contact_person_relation"
+                value={formData.contact_person_relation || ""}
+                onChange={handleInputChange}
+                className="form-control"
+                disabled={isSubmitting}
+                ref={(el) => (formRefs.current.contact_person_relation = el)}
+              >
+                <option value="">Select Relation</option>
+                <option value="self">Self</option>
+                <option value="father">Father</option>
+                <option value="mother">Mother</option>
+                <option value="sister">Sister</option>
+                <option value="brother">Brother</option>
+                <option value="friend">Friend</option>
+                <option value="other">Other</option>
+              </select>
+              {formErrors.contact_person_relation && (
+                <span className="text-danger">
+                  {formErrors.contact_person_relation}
+                </span>
               )}
             </div>
           </div>
